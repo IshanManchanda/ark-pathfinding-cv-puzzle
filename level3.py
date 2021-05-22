@@ -1,23 +1,17 @@
+import cv2
+import itertools
+import numpy as np
 import os
 
-import cv2
-import numpy as np
-
+from heuristics import HeuristicDiagonal, HeuristicManhattan
 from pathfinder import PathFinder
-from heuristics import HeuristicManhattan
 
 
 def get_maze(img):
-	# Given colors (BGR format)
-	# 	start_color = np.array((113, 204, 45))
-	# 	end_color = np.array((60, 76, 231))
-	obstacle_color = np.array((255, 255, 255))
-
-	# 	start = end = None
 	h, w = img.shape
 	maze = np.ones(img.shape)
 
-	# Loop over the pixels of the image and compare with the given values
+	# Loop over the pixels of the image and check for obstacles
 	for i in range(h):
 		for j in range(w):
 			if np.all(img[i][j] == 255):
@@ -43,12 +37,12 @@ def visualize(final_state, i, codes):
 		[[colors[x] for x in row] for row in final_state], dtype=np.uint8
 	)
 	# Scale up image
-	# out = cv2.resize(img, (1000, 1000), interpolation=cv2.INTER_NEAREST)
+	out = cv2.resize(img, (2285, 900), interpolation=cv2.INTER_NEAREST)
 
 	# Save image
 	base_path = os.path.dirname(os.path.abspath(__file__))
 	path = os.path.join(base_path, f'out/output {i}.png')
-	cv2.imwrite(path, img)
+	cv2.imwrite(path, out)
 
 
 def save_data(data, filename):
@@ -74,9 +68,10 @@ def main():
 	end = np.array([160, 430])
 
 	moves_4 = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
-	pathfinder = PathFinder(grid, start, end, moves_4, HeuristicManhattan)
-	path_length = pathfinder.solve()
-	print(path_length)
+	moves_diagonal = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
+	moves_8 = np.append(moves_4, moves_diagonal, axis=0)
+
+	variants = [(moves_4, HeuristicManhattan), (moves_8, HeuristicDiagonal)]
 
 	codes = {
 		'wall': 0,
@@ -87,8 +82,16 @@ def main():
 		'explored': 5,
 		'frontier': 6,
 	}
-	final_state, explored_count = pathfinder.get_final_state(codes)
-	visualize(final_state, 1, codes)
+
+	c = itertools.count()
+
+	for moves, heuristic in variants:
+		pathfinder = PathFinder(grid, start, end, moves, heuristic)
+		path_length = pathfinder.solve()
+		print(path_length)
+
+		final_state, explored_count = pathfinder.get_final_state(codes)
+		visualize(final_state, next(c), codes)
 
 
 if __name__ == '__main__':

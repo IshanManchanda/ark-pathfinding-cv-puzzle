@@ -38,7 +38,6 @@ class PathFinder:
 		# The queue element is of format: (cost, tiebreaker, node)
 		heapq.heappush(self.q, (0, 0, self.start))
 		c = itertools.count()
-		print("Hi", len(self.q))
 		while self.q:
 			# Get the current element to explore
 			# dist_current, _, current = heapq.heappop(self.q)
@@ -77,7 +76,6 @@ class PathFinder:
 				# Enqueue the node and update its distance
 				self.q.append((cost, tiebreaker, adj))
 				self.distances[adj[0], adj[1]] = g
-		print("F", tiebreaker, len(self.q))
 
 	def is_position_valid(self, pos):
 		# Check if the new position is out of bounds

@@ -7,19 +7,6 @@ from heuristics import HeuristicDiagonal, HeuristicManhattan
 from pathfinder import PathFinder
 
 
-def get_maze(img):
-	h, w = img.shape
-	maze = np.ones(img.shape)
-
-	# Loop over the pixels of the image and check for obstacles
-	for i in range(h):
-		for j in range(w):
-			if np.all(img[i][j] == 255):
-				maze[i][j] = 0
-
-	return maze
-
-
 def visualize(final_state, i, codes):
 	# Color values
 	colors = {
@@ -41,7 +28,7 @@ def visualize(final_state, i, codes):
 
 	# Save image
 	base_path = os.path.dirname(os.path.abspath(__file__))
-	path = os.path.join(base_path, f'out/output {i}.png')
+	path = os.path.join(base_path, f'out/maze {i}.png')
 	cv2.imwrite(path, out)
 
 
@@ -53,26 +40,35 @@ def save_data(data, filename):
 
 
 def main():
+	# Read in the maze image
 	maze = cv2.imread('data/maze_lv3.png')
+
+	# Use the found color to create a mask
 	color = 230
-
 	mask = maze[:, :, 0] != color
-	# mask = mask.all(axis=-1)
-	maze2 = maze.copy()
-	maze2[mask] = [0, 0, 0]
-	maze2[~mask] = [255, 255, 255]
-	maze3 = maze2[:, :, 0]
 
-	grid = get_maze(maze3)
+	# Use 1 to mark pathways and use 0 to mark obstacles
+	maze[mask] = [1, 1, 1]
+	maze[~mask] = [0, 0, 0]
+	# Convert to 2d
+	maze = maze[:, :, 0]
+
+	# Start and end points found from the image
 	start = np.array([150, 20])
 	end = np.array([160, 430])
 
+	# List of valid moves
+	# In the first case we'll consider only up, down, left, and right
+	# while in the second we'll allow diagonal moves as well
 	moves_4 = np.array([[0, -1], [-1, 0], [0, 1], [1, 0]])
 	moves_diagonal = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
 	moves_8 = np.append(moves_4, moves_diagonal, axis=0)
 
+	# The 2 cases we will be running
 	variants = [(moves_4, HeuristicManhattan), (moves_8, HeuristicDiagonal)]
 
+	# Codes for various elements in the final state,
+	# used for convenient mapping of colors for the visualization step.
 	codes = {
 		'wall': 0,
 		'path': 1,
@@ -83,13 +79,19 @@ def main():
 		'frontier': 6,
 	}
 
-	c = itertools.count()
+	# Counter generates unique numbers for the figure indices
+	c = itertools.count(1)
 
 	for moves, heuristic in variants:
-		pathfinder = PathFinder(grid, start, end, moves, heuristic)
+		# Create a pathfinder object
+		pathfinder = PathFinder(maze, start, end, moves, heuristic)
+
+		# Solve for shortest path and print path length
 		path_length = pathfinder.solve()
 		print(path_length)
 
+		# Visualize the final state to get the password
+		# (Stores the image in the out directory)
 		final_state, explored_count = pathfinder.get_final_state(codes)
 		visualize(final_state, next(c), codes)
 

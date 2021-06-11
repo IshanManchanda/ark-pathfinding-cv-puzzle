@@ -1,7 +1,8 @@
-import cv2
 import itertools
-import numpy as np
 import os
+
+import cv2
+import numpy as np
 
 from heuristics import HeuristicDiagonal, HeuristicManhattan
 from pathfinder import PathFinder
@@ -65,6 +66,7 @@ def main():
 	moves_8 = np.append(moves_4, moves_diagonal, axis=0)
 
 	# The 2 cases we will be running
+	# TODO: Add more variants
 	variants = [(moves_4, HeuristicManhattan), (moves_8, HeuristicDiagonal)]
 
 	# Codes for various elements in the final state,
@@ -82,6 +84,9 @@ def main():
 	# Counter generates unique numbers for the figure indices
 	c = itertools.count(1)
 
+	# TODO: Measure time and other metrics
+	# TODO: Save measured metrics to disk
+	# TODO: Possibly plot metrics using another jupyter nb?
 	for moves, heuristic in variants:
 		# Create a pathfinder object
 		pathfinder = PathFinder(maze, start, end, moves, heuristic)

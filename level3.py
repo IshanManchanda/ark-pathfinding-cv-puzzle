@@ -1,14 +1,18 @@
 import itertools
+import time
 import os
 
 import cv2
 import numpy as np
 
-from heuristics import HeuristicDiagonal, HeuristicManhattan
+from heuristics import HeuristicDiagonal, HeuristicInfiniteDiagonal, \
+	HeuristicInfiniteManhattan, HeuristicManhattan, HeuristicZero
 from pathfinder import PathFinder
 
 
 def visualize(final_state, i, codes):
+	# Function to render the final state of the solved maze
+
 	# Color values
 	colors = {
 		codes['wall']: (255, 255, 255),
@@ -29,14 +33,14 @@ def visualize(final_state, i, codes):
 
 	# Save image
 	base_path = os.path.dirname(os.path.abspath(__file__))
-	path = os.path.join(base_path, f'out/maze {i}.png')
+	path = os.path.join(base_path, f'out/maze_solved_{i}.png')
 	cv2.imwrite(path, out)
 
 
 def save_data(data, filename):
 	# Write data to file
 	base_path = os.path.dirname(os.path.abspath(__file__))
-	path = os.path.join(base_path, f'out/{filename}.txt')
+	path = os.path.join(base_path, f'out/maze_{filename}.csv')
 	np.savetxt(path, data, delimiter=', ', fmt='%g')
 
 
@@ -65,9 +69,21 @@ def main():
 	moves_diagonal = np.array([[-1, -1], [-1, 1], [1, -1], [1, 1]])
 	moves_8 = np.append(moves_4, moves_diagonal, axis=0)
 
-	# The 2 cases we will be running
-	# TODO: Add more variants
-	variants = [(moves_4, HeuristicManhattan), (moves_8, HeuristicDiagonal)]
+	# For both sets of moves, we evaluate 3 variants:
+	# Dijkstra, an Admissible A*, and a Best-First Search.
+	variants = [
+		(moves_4, HeuristicZero),
+		(moves_4, HeuristicManhattan),
+		(moves_4, HeuristicInfiniteManhattan),
+		(moves_8, HeuristicZero),
+		(moves_8, HeuristicDiagonal),
+		(moves_8, HeuristicInfiniteDiagonal),
+	]
+
+	# Lists to hold the values of interest
+	path_lengths = []
+	explored_nodes = []
+	runtimes = []
 
 	# Codes for various elements in the final state,
 	# used for convenient mapping of colors for the visualization step.
@@ -84,21 +100,30 @@ def main():
 	# Counter generates unique numbers for the figure indices
 	c = itertools.count(1)
 
-	# TODO: Measure time and other metrics
-	# TODO: Save measured metrics to disk
-	# TODO: Possibly plot metrics using another jupyter nb?
+	# Iterate over all cases we're considering
 	for moves, heuristic in variants:
 		# Create a pathfinder object
 		pathfinder = PathFinder(maze, start, end, moves, heuristic)
 
-		# Solve for shortest path and print path length
+		# Solve maze with a timer
+		t_start = time.perf_counter()
 		path_length = pathfinder.solve()
-		print(path_length)
+		t_end = time.perf_counter()
 
 		# Visualize the final state to get the password
 		# (Stores the image in the out directory)
 		final_state, explored_count = pathfinder.get_final_state(codes)
 		visualize(final_state, next(c), codes)
+
+		# Store performance metrics of this run
+		path_lengths.append(path_length)
+		explored_nodes.append(explored_count)
+		runtimes.append(t_end - t_start)
+
+	# Save collected data to files
+	save_data(np.array(path_lengths).reshape(2, -1), 'path_lengths')
+	save_data(np.array(explored_nodes).reshape(2, -1), 'explored_nodes')
+	save_data(np.array(runtimes).reshape(2, -1), 'runtimes')
 
 
 if __name__ == '__main__':

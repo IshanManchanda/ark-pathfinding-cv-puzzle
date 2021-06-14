@@ -17,23 +17,16 @@ class HeuristicZero(HeuristicAbstractBaseClass):
 		return 0
 
 
-class HeuristicAdmissible(HeuristicAbstractBaseClass):
-	@staticmethod
-	def evaluate(current, end):
-		# Half the Diagonal Distance
-		return np.max(np.abs(end - current)) / 2
-
-
 class HeuristicDiagonal(HeuristicAbstractBaseClass):
 	@staticmethod
 	def evaluate(current, end):
 		return np.max(np.abs(end - current))
 
 
-class HeuristicEuclidean(HeuristicAbstractBaseClass):
+class HeuristicInfiniteDiagonal(HeuristicAbstractBaseClass):
 	@staticmethod
 	def evaluate(current, end):
-		return np.sqrt(np.sum(np.square(end - current)))
+		return 180 * 457 * np.max(np.abs(end - current))
 
 
 class HeuristicManhattan(HeuristicAbstractBaseClass):
@@ -42,8 +35,7 @@ class HeuristicManhattan(HeuristicAbstractBaseClass):
 		return np.sum(np.abs(end - current))
 
 
-class HeuristicInadmissible(HeuristicAbstractBaseClass):
+class HeuristicInfiniteManhattan(HeuristicAbstractBaseClass):
 	@staticmethod
 	def evaluate(current, end):
-		# 5 times the Manhattan Distance
-		return 5 * np.sum(np.abs(end - current))
+		return 180 * 457 * np.sum(np.abs(end - current))

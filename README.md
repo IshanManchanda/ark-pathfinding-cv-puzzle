@@ -1,16 +1,21 @@
 # ARK Task 3: Pathfinding & CV Puzzle
 
+__Note__: Please refer the
+[documentation file](https://github.com/IshanManchanda/ark-submission/blob/master/ARK_Documentation.pdf)
+for a thorough discussion of the problem statement,
+approaches, and implementation details.
+
 ### Project Structure
-The Jupyter notebook solution.ipynb contains the solutions
+The Jupyter notebook ```solution.ipynb``` contains the solutions
 to levels 1, 2, and 4. The maze generated for level 3 is visualized in
 the same notebook, but the level has been solved using a separate script.
 
-level3.py is the entry-point into the solution for this level,
-which imports the PathFinder class from pathfinder.py
-and the various Heuristic classes from heuristics.py.
+```level3.py``` is the entry-point into the solution for this level,
+which imports the ```PathFinder``` class from ```pathfinder.py```
+and the various Heuristic classes from ```heuristics.py```.
 
-All given images and inputs are present in the data directory while the 
-generated images and the results are stored in the out directory.
+All given images and inputs are present in the ```data``` directory while the 
+generated images and the results are stored in the ```out``` directory.
 
-All the Heuristic classes implement the Heuristic interface
+All the Heuristic classes implement the ```Heuristic``` interface
 which is implemented in Python as an Abstract Base Class.
